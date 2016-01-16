@@ -41,6 +41,7 @@
 namespace SlmLocale\Strategy;
 
 use Locale;
+use Nette\Diagnostics\Debugger;
 use SlmLocale\LocaleEvent;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
@@ -114,13 +115,14 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
 
         $base   = $this->getBasePath();
         $locale = $this->getFirstSegmentInPath($request->getUri(), $base);
+
         if (!$locale) {
             return;
         }
 
         $aliases = $this->getAliases();
-        if (null !== $aliases && array_key_exists($locale, $aliases)) {
-            $locale = $aliases[$locale];
+        if (null !== $aliases && ($localeSearch = array_search($locale, $aliases))) {
+            $locale = $localeSearch;
         }
 
         if (!$event->hasSupported() || !in_array($locale, $event->getSupported())) {
@@ -133,6 +135,14 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
     public function found(LocaleEvent $event)
     {
         $request = $event->getRequest();
+
+        $assetManager   = $this->getServiceLocator()->getServiceLocator()->get('AssetManager\Service\AssetManager');
+        $request = $event->getRequest();
+
+        if ($assetManager->resolvesToAsset($request)) {
+            return;
+        }
+
         if (!$this->isHttpRequest($request)) {
             return;
         }
@@ -148,7 +158,6 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
                 $locale = $alias;
             }
         }
-
 
         $base  = $this->getBasePath();
         $found = $this->getFirstSegmentInPath($request->getUri(), $base);
@@ -166,7 +175,7 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
         $path = $uri->getPath();
 
         if (!$found || ($event->hasSupported() && !in_array($found, $event->getSupported()))) {
-            $path = '/' . $locale . $path;
+            $path = $base . '/' . $locale . substr($path,  strlen($base));
         } else {
             $path = str_replace($found, $locale, $path);
         }
@@ -198,13 +207,14 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
         $path = $uri->getPath();
 
         // Last part of base is now always locale, remove that
-        $parts = explode('/', trim($base, '/'));
+        $parts = explode('/', $base);
         array_pop($parts);
         $base  = implode('/', $parts);
 
         if ($base) {
             $path = substr($path, strlen($base));
         }
+
         $parts  = explode('/', trim($path, '/'));
 
         // Remove first part
@@ -232,12 +242,15 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
 
     protected function getAliasForLocale($locale)
     {
-        foreach ($this->getAliases() as $alias => $item) {
+        foreach ($this->getAliases() as $item => $alias) {
             if ($item === $locale) {
                 return $alias;
             }
         }
     }
+
+
+    public static $basePath;
 
     protected function getBasePath()
     {
@@ -245,6 +258,10 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
         $router = $this->getRouter();
         if ($router instanceof TreeRouteStack) {
             $base = $router->getBaseUrl();
+            if(!$base) {
+                $request = $this->getServiceLocator()->getServiceLocator()->get('request');
+                $base = $request->getBaseUrl();
+            }
         }
 
         return $base;
