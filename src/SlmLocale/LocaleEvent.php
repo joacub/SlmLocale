@@ -132,4 +132,5 @@ class LocaleEvent extends Event
         $this->uri = $uri;
         return $this;
     }
+
 }

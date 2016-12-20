@@ -41,7 +41,7 @@ namespace SlmLocale\View\Helper;
 
 use SlmLocale\Locale\Detector;
 use Zend\Http\Request;
-use Zend\Mvc\Router\Http\RouteMatch;
+use Zend\Router\Http\RouteMatch;
 use Zend\View\Helper\AbstractHelper;
 use Zend\View\Exception\RuntimeException;
 
@@ -59,7 +59,7 @@ class LocaleUrl extends AbstractHelper
      */
     protected $request;
 
-    public function __construct(Detector $detector, Request $request, Routematch $match = null)
+    public function __construct(Detector $detector, Request $request, RouteMatch $match = null)
     {
         $this->detector = $detector;
         $this->match    = $match;

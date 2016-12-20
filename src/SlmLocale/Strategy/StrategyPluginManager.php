@@ -40,6 +40,7 @@
 
 namespace SlmLocale\Strategy;
 
+use Tracy\Debugger;
 use Zend\ServiceManager\AbstractPluginManager;
 
 class StrategyPluginManager extends AbstractPluginManager
@@ -55,6 +56,22 @@ class StrategyPluginManager extends AbstractPluginManager
         'uripath'        => 'SlmLocale\Strategy\UriPathStrategy',
     );
 
+    protected $aliases = [
+        'cookie'         => CookieStrategy::class,
+        'host'           => HostStrategy::class,
+        'acceptlanguage' => HttpAcceptLanguageStrategy::class,
+        'query'          => QueryStrategy::class,
+        'uripath'        => UriPathStrategy::class,
+    ];
+
+    protected $factories = [
+        CookieStrategy::class => InvokableFactory::class,
+        HostStrategy::class    => InvokableFactory::class,
+        HttpAcceptLanguageStrategy::class    => InvokableFactory::class,
+        QueryStrategy::class    => InvokableFactory::class,
+        UriPathStrategy::class    => InvokableFactory::class,
+    ];
+
     /**
      * Validate the plugin
      *
@@ -64,7 +81,7 @@ class StrategyPluginManager extends AbstractPluginManager
      * @return void
      * @throws Exception\InvalidStrategyException if invalid
      */
-    public function validatePlugin($plugin)
+    public function validate($plugin)
     {
         if ($plugin instanceof StrategyInterface) {
             // we're okay
@@ -77,4 +94,5 @@ class StrategyPluginManager extends AbstractPluginManager
             __NAMESPACE__
         ));
     }
+
 }

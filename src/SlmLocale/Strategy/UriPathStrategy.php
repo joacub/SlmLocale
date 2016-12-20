@@ -40,15 +40,17 @@
 
 namespace SlmLocale\Strategy;
 
+use Interop\Container\Exception\ContainerException;
+use Interop\Container\Exception\NotFoundException;
 use Locale;
 use Nette\Diagnostics\Debugger;
 use SlmLocale\LocaleEvent;
+use Zend\Router\Http\TreeRouteStack;
+use Zend\ServiceManager\Exception;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 use Zend\Uri\Uri;
-use Zend\Mvc\Router\Http\TreeRouteStack;
 
-class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInterface
+class UriPathStrategy extends AbstractStrategy implements ServiceLocatorInterface
 {
     const REDIRECT_STATUS_CODE = 302;
 
@@ -88,7 +90,7 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
 
     protected function getRouter()
     {
-        return $this->getServiceLocator()->getServiceLocator()->get('router');
+        return $this->getServiceLocator()->get('router');
     }
 
     protected function redirectWhenFound()
@@ -136,7 +138,7 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
     {
         $request = $event->getRequest();
 
-        $assetManager   = $this->getServiceLocator()->getServiceLocator()->get('AssetManager\Service\AssetManager');
+        $assetManager   = $this->getServiceLocator()->get('AssetManager\Service\AssetManager');
         $request = $event->getRequest();
 
         if ($assetManager->resolvesToAsset($request)) {
@@ -163,6 +165,7 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
         $found = $this->getFirstSegmentInPath($request->getUri(), $base);
 
         $this->getRouter()->setBaseUrl($base . '/' . $locale);
+
         if ($locale === $found) {
             return;
         }
@@ -259,11 +262,28 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorAwareInt
         if ($router instanceof TreeRouteStack) {
             $base = $router->getBaseUrl();
             if(!$base) {
-                $request = $this->getServiceLocator()->getServiceLocator()->get('request');
+                $request = $this->getServiceLocator()->get('request');
                 $base = $request->getBaseUrl();
             }
         }
 
         return $base;
     }
+
+    public function build($name, array $options = null)
+    {
+        // TODO: Implement build() method.
+    }
+
+    public function get($id)
+    {
+        // TODO: Implement get() method.
+    }
+
+    public function has($id)
+    {
+        // TODO: Implement has() method.
+    }
+
+
 }
