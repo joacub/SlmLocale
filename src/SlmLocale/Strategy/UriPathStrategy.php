@@ -52,7 +52,7 @@ use Zend\Uri\Uri;
 
 class UriPathStrategy extends AbstractStrategy implements ServiceLocatorInterface
 {
-    const REDIRECT_STATUS_CODE = 301;
+    const REDIRECT_STATUS_CODE = 302;
 
     protected $redirect_when_found = true;
     protected $aliases;
@@ -186,7 +186,7 @@ class UriPathStrategy extends AbstractStrategy implements ServiceLocatorInterfac
         $uri->setPath($path);
 
         $response = $event->getResponse();
-        $response->setStatusCode(self::REDIRECT_STATUS_CODE);
+        $response->setStatusCode(($locale == 'en' ? 301 : self::REDIRECT_STATUS_CODE));
         $response->getHeaders()->addHeaderLine('Location', $uri->toString());
 
         return $response;
