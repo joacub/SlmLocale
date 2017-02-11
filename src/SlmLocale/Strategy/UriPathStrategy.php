@@ -52,7 +52,7 @@ use Zend\Uri\Uri;
 
 class UriPathStrategy extends AbstractStrategy implements ServiceLocatorInterface
 {
-    const REDIRECT_STATUS_CODE = 302;
+    const REDIRECT_STATUS_CODE = 301;
 
     protected $redirect_when_found = true;
     protected $aliases;
